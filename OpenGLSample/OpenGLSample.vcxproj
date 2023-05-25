@@ -136,9 +136,11 @@
     <None Include="point.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileMonitor.h" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="VertexArrayObjectDrawer.h" />
     <ClInclude Include="VertexArrayObject.h" />
   </ItemGroup>

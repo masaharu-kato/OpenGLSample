@@ -27,12 +27,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="FileMonitor.h">
+      <Filter>Headers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VertexArrayObject.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="VertexArrayObjectDrawer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
