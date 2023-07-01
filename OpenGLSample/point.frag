@@ -1,12 +1,10 @@
-#version 150 core
+#version 460 core
 precision mediump float;
 out vec4 fragment;
 uniform float t; // time
-uniform vec2  r; // resolution
+in vec4 pos;
 
 void main(void){
-	float a = gl_FragCoord.y / 512.0;
-	float b = gl_FragCoord.x / 512.0;
-	fragment = vec4(a,b,1.0,1.0);
-	//	fragment = vec4(1.0, 0.0, 0.0, 1.0);
+	//	fragment = (int(pos.x*10) + int(pos.y*10)) % 2 == 0 ? vec4(0.6,0.6,0.6,1.0) : vec4(0.8,0.8,0.8,1.0);
+	fragment = vec4(pos.x, pos.y, 0.0, 1.0);
 }
