@@ -8,17 +8,18 @@ class VertexArrayObject {
 	GLuint vbo;
 	GLsizei _n_vertex;
 
+
 public:
+	std::vector<Triangle> triangles;
 
 	VertexArrayObject(const std::vector<Triangle>& triangles)
-		: _n_vertex(triangles.size() * 3)
+		: triangles(triangles)
 	{
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
 		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, _n_vertex * sizeof Vertex, triangles.data(), GL_STATIC_DRAW);
+		update();
 
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(0);
@@ -35,8 +36,14 @@ public:
 		glDrawArrays(GL_TRIANGLES, 0, _n_vertex);
 	}
 
-	GLuint n_vertex() const {
-		return _n_vertex;
+	//GLuint n_vertex() const {
+	//	return _n_vertex;
+	//}
+
+	void update() {
+		_n_vertex = triangles.size() * 3;
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, _n_vertex * sizeof Vertex, triangles.data(), GL_STATIC_DRAW);
 	}
 
 private:

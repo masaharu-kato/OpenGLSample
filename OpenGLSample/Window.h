@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <functional>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "Geometry.h"
@@ -18,6 +19,10 @@ class Window {
 	Vertex orig_mouse_loc = { 0.0f, 0.0f };
 
 public:
+	std::function<void(Vertex)> on_mouse_l_pressed = [](Vertex) {};
+	std::function<void(Vertex)> on_mouse_l_pressing = [](Vertex) {};
+	std::function<void()> on_mouse_l_released = []() {};
+
 	Window(int width, int height, const char* title)
 		: window(glfwCreateWindow(width, height, title, NULL, NULL)),
 			scale(100.0f), location({0.0f, 0.0f})
@@ -53,28 +58,44 @@ public:
 	explicit operator bool() {
 		glfwWaitEvents();
 
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) != GLFW_RELEASE) {
+		//	Get mouse cursur position and convert to the normalized location
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		Vertex mouse_loc = {
+			(GLfloat)x * 2.0f / size.x - 1.0f,
+			1.0f - (GLfloat)y * 2.0f / size.y,
+		};
 
-			//	Get mouse cursur position and convert to the normalized location
-			double x, y;
-			glfwGetCursorPos(window, &x, &y);
-			Vertex mouse_loc = {
-				(GLfloat)x * 2.0f / size.x - 1.0f,
-				1.0f - (GLfloat)y * 2.0f / size.y,
-			};
+		Vertex world_loc = (mouse_loc - location) / (2.f * scale) * size;
+
+		//std::cout << "world_loc: " << world_loc.x << ", " << world_loc.y << "\n";
+
+		bool is_mouse_l_pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) != GLFW_RELEASE;
+		bool is_mouse_r_pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) != GLFW_RELEASE;
+
+		if (is_mouse_l_pressed || is_mouse_r_pressed) {
 
 			if (!is_mouse_pressed) {
+				if (is_mouse_l_pressed) on_mouse_l_pressed(world_loc);
+
 				orig_loc = location;
 				orig_mouse_loc = mouse_loc;
 				is_mouse_pressed = true;
 			}
 
-			location = orig_loc + (mouse_loc - orig_mouse_loc);
+			if (is_mouse_l_pressed) {
+				on_mouse_l_pressing(world_loc);
+			}
+			else if (is_mouse_r_pressed) {
+				location = orig_loc + (mouse_loc - orig_mouse_loc);
+			}
 
 		}
 		else {
 			if (is_mouse_pressed) {
 				is_mouse_pressed = false;
+
+				if (is_mouse_l_pressed) on_mouse_l_released();
 			}
 		}
 

@@ -44,5 +44,8 @@
     <ClInclude Include="Window.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

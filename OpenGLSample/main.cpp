@@ -41,11 +41,28 @@ int main()
 
 
     //  Make a shape data
-    std::vector<Triangle> triangles{
-        {{-0.5f, -0.5f}, { 0.5f, -0.5f}, { 0.5f,  0.5f}},
-        {{ 0.5f,  0.5f}, {-0.5f,  0.5f}, {-0.5f, -0.5f}},
+    auto vbo = std::make_unique<VertexArrayObject>(std::vector<Triangle>{
+        {{-0.5f, -0.5f}, {-0.1f, -0.5f}, {-0.1f, -0.2f}},
+        {{-0.1f, -0.2f}, {-0.5f, -0.2f}, {-0.5f, -0.5f}},
+        {{ 0.2f,  0.4f}, { 0.8f,  0.4f}, { 0.8f,  0.9f}},
+        {{ 0.8f,  0.9f}, { 0.2f,  0.9f}, { 0.2f,  0.4f}},
+    });
+
+    Vertex oloc = { 0.0f, 0.0f };
+    window.on_mouse_l_pressed = [&](Vertex loc) {
+        oloc = loc;
+        vbo->triangles.push_back({ loc, loc, loc });
+        vbo->triangles.push_back({ loc, loc, loc });
     };
-    auto vbo = std::make_unique<VertexArrayObject>(triangles);
+
+    window.on_mouse_l_pressing = [&](Vertex cloc) {
+        std::cout << "mouse pressing: " << cloc.x << ", " << cloc.y << "\n";
+        vbo->triangles.pop_back();
+        vbo->triangles.pop_back();
+        vbo->triangles.push_back({ oloc, { oloc.x, cloc.y }, cloc });
+        vbo->triangles.push_back({ cloc, { cloc.x, oloc.y }, oloc });
+        vbo->update();
+    };
 
     double c_time = glfwGetTime();
     int frame = 0;

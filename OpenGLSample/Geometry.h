@@ -20,6 +20,22 @@ struct Vertex {
 		return { -x, -y };
 	}
 
+	Vertex operator * (GLfloat v) const {
+		return { x * v, y * v };
+	}
+
+	Vertex operator / (GLfloat v) const {
+		return { x / v, y / v };
+	}
+
+	Vertex operator * (Vertex v) const {
+		return { x * v.x, y * v.y };
+	}
+
+	Vertex operator / (Vertex v) const {
+		return { x / v.x, y / v.y };
+	}
+
 };
 
 struct Triangle {
