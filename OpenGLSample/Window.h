@@ -13,6 +13,10 @@ class Window {
 
 	GLfloat mouse_wheel_rate = 1.1f;
 
+	bool is_mouse_pressed = false;
+	Vertex orig_loc = { 0.0f, 0.0f };
+	Vertex orig_mouse_loc = { 0.0f, 0.0f };
+
 public:
 	Window(int width, int height, const char* title)
 		: window(glfwCreateWindow(width, height, title, NULL, NULL)),
@@ -54,11 +58,24 @@ public:
 			//	Get mouse cursur position and convert to the normalized location
 			double x, y;
 			glfwGetCursorPos(window, &x, &y);
-			location = {
+			Vertex mouse_loc = {
 				(GLfloat)x * 2.0f / size.x - 1.0f,
 				1.0f - (GLfloat)y * 2.0f / size.y,
 			};
 
+			if (!is_mouse_pressed) {
+				orig_loc = location;
+				orig_mouse_loc = mouse_loc;
+				is_mouse_pressed = true;
+			}
+
+			location = orig_loc + (mouse_loc - orig_mouse_loc);
+
+		}
+		else {
+			if (is_mouse_pressed) {
+				is_mouse_pressed = false;
+			}
 		}
 
 		return !glfwWindowShouldClose(window);

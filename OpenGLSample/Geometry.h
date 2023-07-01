@@ -7,6 +7,19 @@ struct Vertex {
 	operator const GLfloat*() const {
 		return &x;
 	}
+
+	Vertex operator + (Vertex v) const {
+		return { x + v.x, y + v.y };
+	}
+
+	Vertex operator - (Vertex v) const {
+		return { x - v.x, y - v.y };
+	}
+
+	Vertex operator - () const {
+		return { -x, -y };
+	}
+
 };
 
 struct Triangle {
