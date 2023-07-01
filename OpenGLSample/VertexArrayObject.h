@@ -1,24 +1,26 @@
 #pragma once
 #include <GL/glew.h>
+#include <vector>
+#include "Geometry.h"
 
 class VertexArrayObject {
 	GLuint vao;
 	GLuint vbo;
+	GLsizei _n_vertex;
 
 public:
-	struct Vertex {
-		GLfloat position[2];
-	};
 
-	VertexArrayObject(GLint size, GLsizei vertex_count, const Vertex* vertex) {
+	VertexArrayObject(const std::vector<Triangle>& triangles)
+		: _n_vertex(triangles.size() * 3)
+	{
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof Vertex, vertex, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, _n_vertex * sizeof Vertex, triangles.data(), GL_STATIC_DRAW);
 
-		glVertexAttribPointer(0, size, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(0);
 	}
 
@@ -28,8 +30,13 @@ public:
 	}
 
 public:
-	void bind() const {
+	void draw() const {
 		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, _n_vertex);
+	}
+
+	GLuint n_vertex() const {
+		return _n_vertex;
 	}
 
 private:

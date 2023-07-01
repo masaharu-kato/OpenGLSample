@@ -16,11 +16,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="point.vert">
-      <Filter>Sources</Filter>
-    </None>
     <None Include="point.frag">
-      <Filter>Sources</Filter>
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="point.vert">
+      <Filter>Resources</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -35,10 +35,13 @@
     <ClInclude Include="VertexArrayObject.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="VertexArrayObjectDrawer.h">
+    <ClInclude Include="ShaderProgram.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderProgram.h">
+    <ClInclude Include="Geometry.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

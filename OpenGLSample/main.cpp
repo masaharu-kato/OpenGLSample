@@ -5,17 +5,11 @@
 #include <memory>
 #include <gl/glew.h>
 #include <GLFW/glfw3.h>
+#include "Window.h"
 #include "ShaderProgram.h"
-#include "VertexArrayObjectDrawer.h"
+#include "VertexArrayObject.h"
 #include "FileMonitor.h"
-
-
-constexpr VertexArrayObject::Vertex rect_verts[] = {
-    {-1.0f, -1.0f},
-    { 1.0f, -1.0f},
-    { 1.0f,  1.0f},
-    {-1.0f,  1.0f},
-};
+#include "Geometry.h"
 
 constexpr int FPS = 60;
 constexpr double TIME_INTERVAL = 1.0 / FPS;
@@ -34,35 +28,28 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    //  Create GLFW Window
-    auto window = glfwCreateWindow(640, 480, "SAMPLE", NULL, NULL);
-    if (!window) throw std::runtime_error("Failed to create GLFW window.");
-
-    //  Set the target window
-    glfwMakeContextCurrent(window);
-
-    //  Init GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) throw std::runtime_error("Failed to initialize GLEW.");
-
-    //  Vertical-sync
-    glfwSwapInterval(1);
+    Window window(960, 540, "OpenGLSample");
 
     //  Set background color
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
     //  Create a shader program
     ShaderProgramWithMonitor shader_program("point.vert", "point.frag");
+    shader_program.prepareUniformVars({ "size", "scale" });
 
     //  Make a shape data
-    std::unique_ptr<const VertexArrayObjectDrawer> vbo_drawer(new VertexArrayObjectDrawer(2, 4, rect_verts));
+    std::vector<Triangle> triangles{
+        {{-0.5f, -0.5f}, { 0.5f, -0.5f}, { 0.5f,  0.5f}},
+        {{ 0.5f,  0.5f}, {-0.5f,  0.5f}, {-0.5f, -0.5f}},
+    };
+    auto vbo = std::make_unique<VertexArrayObject>(triangles);
 
     double c_time = glfwGetTime();
     int frame = 0;
 
     std::cout << "Ready...\n";
 
-    while (glfwWindowShouldClose(window) == GL_FALSE)
+    while (window)
     {
         const double new_time = glfwGetTime();
         if (new_time - c_time >= TIME_INTERVAL) {
@@ -77,12 +64,14 @@ int main()
 
             //  Start using the shader program
             shader_program.use();
+            shader_program.setUniformVar("size", window.size());
+            shader_program.setUniformVar("scale", window.scale());
 
             //  Draw a shape
-            vbo_drawer->draw();
+            vbo->draw();
 
             //  Swap screen
-            glfwSwapBuffers(window);
+            window.swapBuffers();
 
             //  Flush debug messages
             std::cout.flush();

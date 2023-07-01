@@ -5,7 +5,9 @@
 #include <memory>
 #include <gl/glew.h>
 #include <GLFW/glfw3.h>
+#include "Geometry.h"
 #include "FileMonitor.h"
+#include <unordered_map>
 
 
 class ShaderCompiler {
@@ -21,7 +23,9 @@ public:
         const char* _source = source.data();
 
         const GLuint shader_obj(glCreateShader(shader_type()));
+        
         glShaderSource(shader_obj, 1, &_source, NULL);
+
         glCompileShader(shader_obj);
 
         if (!printShaderInfoLog(shader_obj)) throw std::runtime_error("Failed to compile.");
@@ -102,6 +106,7 @@ private:
     VertexShaderCompiler vsc;
     FragmentShaderCompiler fsc;
     GLuint _gl_program = 0;
+    std::unordered_map<const GLchar*, GLuint> ufvars;
    
 public:
     ShaderProgram(const char* vert_filename, const char* frag_filename)
@@ -117,9 +122,26 @@ public:
         return _gl_program;
     }
 
+    void prepareUniformVars(std::vector<const GLchar*> varnames) {
+        for (const GLchar* varname : varnames) {
+            auto loc = glGetUniformLocation(_gl_program, varname);
+            if(loc == -1) throw std::runtime_error("Failed to prepare uniform variable.");
+            ufvars[varname] = loc;
+            //std::cout << "prepared ufvar `" << varname << "`: " << ufvars[varname] << "\n";
+        }
+    }
+
     void use() const {
         if (!_gl_program) throw std::runtime_error("Shader program is not available.");
         return glUseProgram(_gl_program);
+    }
+
+    void setUniformVar(const GLchar* varname, GLfloat value) {
+        glUniform1f(ufvars[varname], value);
+    }
+
+    void setUniformVar(const GLchar* varname, Vertex value) {
+        glUniform2fv(ufvars[varname], 1, value);
     }
 
     GLuint create() {
@@ -140,6 +162,7 @@ public:
             throw std::runtime_error("Failed to create shader program.");
         }
         _gl_program = new_gl_program;
+        std::cout << "Created shader program: " << _gl_program << "\n";
         return gl_program();
     }
 
