@@ -3,11 +3,12 @@
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <functional>
 #include <gl/glew.h>
 #include <GLFW/glfw3.h>
 #include "Geometry.h"
 #include "FileMonitor.h"
-#include <unordered_map>
 
 
 class ShaderCompiler {
@@ -102,11 +103,17 @@ protected:
 };
 
 class ShaderProgram {
-private:
+    
+    struct VarData {
+        const GLchar* name;
+        const GLuint loc;
+        const std::function<void()> set_value;
+    };
+
     VertexShaderCompiler vsc;
     FragmentShaderCompiler fsc;
     GLuint _gl_program = 0;
-    std::unordered_map<const GLchar*, GLuint> ufvars;
+    std::vector<VarData> ufvars;
    
 public:
     ShaderProgram(const char* vert_filename, const char* frag_filename)
@@ -122,26 +129,29 @@ public:
         return _gl_program;
     }
 
-    void prepareUniformVars(std::vector<const GLchar*> varnames) {
-        for (const GLchar* varname : varnames) {
-            auto loc = glGetUniformLocation(_gl_program, varname);
-            if(loc == -1) throw std::runtime_error("Failed to prepare uniform variable.");
-            ufvars[varname] = loc;
-            //std::cout << "prepared ufvar `" << varname << "`: " << ufvars[varname] << "\n";
-        }
+    //void prepareUniformVars(std::vector<const GLchar*> varnames) {
+    //    for (const GLchar* varname : varnames) preapreUniformVar(varname);
+    //}
+
+    template <typename Maker>
+    void registerUniformVar(const GLchar* varname, Maker maker) {
+        auto loc = getUniformLocation(varname);
+        ufvars.push_back({
+            varname,
+            loc,
+            [=] {   //  <-- Important! `loc` and `maker` are local variable, need copy capture
+                setUniformVar(loc, maker());
+                //std::cout << "Set ufvar `" << varname << "`(loc:" << loc << ").\n";
+            }
+        });
+        std::cout << "Registered ufvar `" << varname << "` to loc " << loc << ".\n";
     }
 
     void use() const {
         if (!_gl_program) throw std::runtime_error("Shader program is not available.");
-        return glUseProgram(_gl_program);
-    }
+        glUseProgram(_gl_program);
 
-    void setUniformVar(const GLchar* varname, GLfloat value) {
-        glUniform1f(ufvars[varname], value);
-    }
-
-    void setUniformVar(const GLchar* varname, Vertex value) {
-        glUniform2fv(ufvars[varname], 1, value);
+        for (const auto& ufvar : ufvars) ufvar.set_value();
     }
 
     GLuint create() {
@@ -189,6 +199,22 @@ public:
         //if (!stat) throw std::runtime_error("Failed to link program object.");
         return status;
     }
+
+private:
+    GLuint getUniformLocation(const GLchar* varname) {
+        auto loc = glGetUniformLocation(_gl_program, varname);
+        if (loc == -1) throw std::runtime_error("Failed to prepare uniform variable.");
+        return loc;
+    }
+
+    void setUniformVar(GLuint loc, GLfloat val) {
+        glUniform1f(loc, val);
+    }
+
+    void setUniformVar(GLuint loc, Vertex val) {
+        glUniform2fv(loc, 1, val);
+    }
+
 };
 
 class ShaderProgramWithMonitor : public ShaderProgram {

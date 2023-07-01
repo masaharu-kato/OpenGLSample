@@ -35,7 +35,10 @@ int main()
 
     //  Create a shader program
     ShaderProgramWithMonitor shader_program("point.vert", "point.frag");
-    shader_program.prepareUniformVars({ "size", "scale", "location"});
+    shader_program.registerUniformVar("size", [&] { return window.getSize(); });
+    shader_program.registerUniformVar("scale", [&] { return window.getScale(); });
+    shader_program.registerUniformVar("location", [&] { return window.getLocation(); });
+
 
     //  Make a shape data
     std::vector<Triangle> triangles{
@@ -64,9 +67,6 @@ int main()
 
             //  Start using the shader program
             shader_program.use();
-            shader_program.setUniformVar("size", window.size());
-            shader_program.setUniformVar("scale", window.scale());
-            shader_program.setUniformVar("location", window.location());
 
             //  Draw a shape
             vbo->draw();
